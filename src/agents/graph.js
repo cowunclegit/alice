@@ -89,28 +89,40 @@ export function createGraph(config) {
     'recorder',
     (state) => {
       if (state.executionResult.exitCode !== 0) {
-        if (state.retryCount >= 5) return 'finalizer';
-        if (state.html_content) return 'analyzer'; // Analyze first on failure
+        if (state.retryCount >= 10) return 'finalizer';
+        if (state.html_content) return 'analyzer_healing'; // Go to analyzer but then to debugger
         return 'debugger';
       }
       return 'evaluator';
     },
     {
       finalizer: 'finalizer',
-      analyzer: 'analyzer',
+      analyzer_healing: 'analyzer',
       debugger: 'debugger',
       evaluator: 'evaluator'
     }
   );
 
-  workflow.addEdge('analyzer', 'debugger'); // After analysis, go to debugger with facts
+  workflow.addConditionalEdges(
+    'analyzer',
+    (state) => {
+      // If we have an executionResult, we are in a healing loop
+      if (state.executionResult) return 'debugger';
+      return 'coder';
+    },
+    {
+      debugger: 'debugger',
+      coder: 'coder'
+    }
+  );
+
   workflow.addEdge('debugger', 'executor'); // Retry execution after fix
 
   workflow.addConditionalEdges(
     'evaluator',
     (state) => {
       if (state.isSuccess) return 'finalizer';
-      if (state.retryCount >= 5) return 'finalizer';
+      if (state.retryCount >= 10) return 'finalizer';
       if (state.needsReplan) return 'planner'; // Trigger Re-plan
       return 'debugger'; // Simple retry or fix
     },

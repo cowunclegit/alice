@@ -17,6 +17,9 @@ describe('Healing Loop Integration', () => {
         .mockResolvedValueOnce({ // Evaluator
           content: JSON.stringify({ isSuccess: true, analysis: 'All good' })
         })
+        .mockResolvedValueOnce({ // Finalizer
+          content: 'FIXED SCRIPT'
+        })
     };
 
     const mockRunner = {

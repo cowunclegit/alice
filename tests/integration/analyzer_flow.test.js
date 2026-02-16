@@ -20,6 +20,9 @@ describe('Analyzer Flow Integration', () => {
         .mockResolvedValueOnce({ // Evaluator
           content: JSON.stringify({ isSuccess: true, analysis: 'OK' })
         })
+        .mockResolvedValueOnce({ // Finalizer
+          content: '*** Settings ***\nLibrary    Browser'
+        })
     };
 
     const mockRunner = { execute: jest.fn().mockResolvedValue({ exitCode: 0, stdout: 'OK' }) };
@@ -41,7 +44,7 @@ describe('Analyzer Flow Integration', () => {
       history: []
     });
 
-    expect(mockLlm.invoke).toHaveBeenCalledTimes(4); // Planner, Analyzer, Coder, Evaluator
+    expect(mockLlm.invoke).toHaveBeenCalledTimes(5); // Planner, Analyzer, Coder, Evaluator, Finalizer
     expect(result.analysis_results).toBeDefined();
     expect(result.analysis_results[0].selector).toBe('input[name="q"]');
     

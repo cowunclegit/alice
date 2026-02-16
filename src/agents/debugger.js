@@ -22,24 +22,32 @@ The "fixProposal" MUST be the FULL raw content of the corrected .robot file as a
 ${analyzerContext}
 
 CRITICAL RULES (STRICT ENFORCEMENT):
+0. ID ESCAPING: ALWAYS escape ID selectors with a SINGLE backslash (e.g., \\#query). NEVER use # without a backslash. Robot Framework will FAIL if you use '#id-name' because it thinks it's a comment.
 1. NO NAMED ARGUMENTS: NEVER use 'selector=', 'key=', 'txt=', etc. Use positional only.
 2. FORMAT: You MUST use the PIPE-SEPARATED format (| Keyword | arg |).
-3. LIBRARIES: Use Browser, OperatingSystem, JSONLibrary, Collections.
-4. JSON: Use '| \${json} | Evaluate | json.dumps(\${data}, indent=4) |'. NEVER use 'Convert To Json'.
-5. HTML CAPTURE: ALWAYS use 'debug.html' as the filename and 'Get Property | html | outerHTML' to get content. Ensure a 'Test Teardown' with 'Capture HTML' is present.
-6. KEYWORDS: Use 'Get Elements' or 'Get Element'. NEVER use 'Query Selector'.
+3. SELF-CORRECTION: 
+   - ALWAYS use scalar syntax $\{elements\} to store Get Elements. NEVER use @{elements} for assignment.
+   - BEFORE using Get Elements or Get Text, you MUST explicitly wait for that element.
+4. LIBRARIES: Use Browser, OperatingSystem, JSONLibrary, Collections.
+5. JSON: Use '| \${json} | Evaluate | json.dumps(\${data}, indent=4) |'. NEVER use 'Convert To Json'.
+6. HTML CAPTURE: ALWAYS use 'debug.html' as the filename and 'Get Property | html | outerHTML' to get content. Ensure a 'Test Teardown' with 'Capture HTML' is present.
+7. KEYWORDS: Use 'Get Elements' or 'Get Element'. NEVER use 'Query Selector'.
+8. WAITING: ALWAYS use 'Wait For Elements State'. NEVER use 'Wait For Selector' or 'Wait For Element'.
+9. SEPARATORS: Ensure at least 4 spaces or | are used. If the error says "No keyword with name 'X Y'", it usually means a missing separator between 'X' and 'Y'.
 
 Return the response strictly in JSON format with the following keys:
-- analysis: A detailed analysis of why the script failed
-- fixProposal: The FULL corrected .robot script content (STRING ONLY)`;
+- analysis: A detailed analysis of why the script failed.
+- fixProposal: The FULL corrected .robot script content (STRING ONLY).
+
+IMPORTANT JSON RULE: If you include a backslash in the 'analysis' or 'fixProposal' fields, remember that in JSON a literal backslash must be written as \\\\ (e.g., \\\\#id). However, our system will try to auto-fix it if you forget.`;
 
   const userMessage = `Script Content:
 ${scriptContent}
 
 Execution Result:
-Exit Code: ${executionResult.exitCode}
-STDOUT: ${executionResult.stdout}
-STDERR: ${executionResult.stderr}`;
+Exit Code: ${executionResult ? executionResult.exitCode : 'Unknown'}
+STDOUT: ${executionResult ? executionResult.stdout : 'N/A'}
+STDERR: ${executionResult ? executionResult.stderr : 'N/A'}`;
 
   const response = await llm.invoke([
     { role: 'system', content: systemPrompt },
@@ -70,7 +78,7 @@ STDERR: ${executionResult.stderr}`;
       attempt: retryCount + 1,
       analysis: result.analysis,
       fix_proposal: result.fixProposal,
-      result: executionResult.exitCode === 0 ? 'PASS' : 'FAIL'
+      result: executionResult && executionResult.exitCode === 0 ? 'PASS' : 'FAIL'
     }]
   };
 }

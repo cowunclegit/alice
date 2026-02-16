@@ -14,6 +14,9 @@ describe('Generation Flow Integration', () => {
         .mockResolvedValueOnce({ // Evaluator (Technical SUCCESS goes to evaluator)
           content: JSON.stringify({ isSuccess: true, analysis: 'OK' })
         })
+        .mockResolvedValueOnce({ // Finalizer
+          content: '*** Settings ***\nLibrary    Browser\n# Optimized script'
+        })
     };
 
     const mockRunner = {

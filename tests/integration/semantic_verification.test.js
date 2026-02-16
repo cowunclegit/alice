@@ -14,6 +14,9 @@ describe('Semantic Verification Integration', () => {
         .mockResolvedValueOnce({ // Evaluator
           content: JSON.stringify({ isSuccess: true, analysis: 'All good' })
         })
+        .mockResolvedValueOnce({ // Finalizer
+          content: 'SOME SCRIPT'
+        })
     };
 
     const mockRunner = {
@@ -37,6 +40,6 @@ describe('Semantic Verification Integration', () => {
     });
 
     expect(result.isSuccess).toBe(true);
-    expect(mockLlm.invoke).toHaveBeenCalledTimes(3);
+    expect(mockLlm.invoke).toHaveBeenCalledTimes(4);
   });
 });

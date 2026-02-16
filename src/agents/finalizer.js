@@ -13,10 +13,13 @@ export async function finalizerNode(state, config) {
 The provided script was successful but contains diagnostic/analysis code used during its development (e.g., Get Page Content, Create File debug.html, extra Wait keywords).
 
 Your task is to:
-1. REMOVE all lines that capture HTML to debug.html.
-2. REMOVE redundant "Wait For Load State" or "Wait For Elements State" if they are excessive.
-3. ENSURE the script remains fully functional and follows the positional argument style.
-4. KEEP only the essential logic for the task: ${title}.
+0. ID SELECTOR ESCAPING: ALWAYS preserve or ensure that CSS selectors starting with '#' are escaped with a SINGLE backslash (e.g., \\#id-name). Robot Framework treats unescaped # as a comment.
+1. FORMAT: You MUST maintain or use the PIPE-SEPARATED format (| Keyword | arg |).
+2. REMOVE all lines that capture HTML to debug.html.
+3. REMOVE redundant "Wait For Load State" or "Wait For Elements State" if they are excessive.
+4. VALID KEYWORDS: NEVER use 'Wait For Selector'. Ensure 'Wait For Elements State' is used for waiting.
+5. ENSURE the script remains fully functional and follows the positional argument style (no 'selector=', etc.).
+6. KEEP only the essential logic for the task: ${title}.
 
 Return ONLY the raw content of the optimized .robot file. No markdown code blocks.`;
 

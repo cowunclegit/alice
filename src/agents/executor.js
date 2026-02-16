@@ -79,19 +79,22 @@ export async function executorNode(state, config) {
   }
 
   if (result.exitCode !== 0) {
-    console.log('[Executor] STDOUT:', result.stdout);
-    console.error('[Executor] STDERR:', result.stderr);
+    console.log('[Executor] STDOUT:', result.stdout || '(empty)');
+    console.error('[Executor] STDERR:', result.stderr || '(empty)');
   }
 
   // Extract current URL and failed locator from STDOUT/STDERR
   let current_url = null;
   let analysis_goal = null;
 
-  const urlMatch = result.stdout.match(/opened url: (https?:\/\/[^\s]+)/i);
+  const stdout = result.stdout || '';
+  const stderr = result.stderr || '';
+
+  const urlMatch = stdout.match(/opened url: (https?:\/\/[^\s]+)/i);
   if (urlMatch) current_url = urlMatch[1];
 
-  const locatorMatch = result.stdout.match(/waiting for locator\('(.+?)'\)/i) || 
-                       result.stderr.match(/waiting for locator\('(.+?)'\)/i);
+  const locatorMatch = stdout.match(/waiting for locator\('(.+?)'\)/i) || 
+                       stderr.match(/waiting for locator\('(.+?)'\)/i);
   
   if (locatorMatch) {
     const failedLocator = locatorMatch[1];

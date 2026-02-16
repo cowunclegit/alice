@@ -48,6 +48,12 @@ Using these labels often causes "expected X arguments, got 1" errors. ALWAYS use
    - NEVER use `Convert To Json` (it does not exist in standard JSONLibrary).
 2. **Positional Only**: Continue to follow the **NO NAMED ARGUMENTS** rule for all library keywords.
 
+### 🚨 ID SELECTOR ESCAPING (CRITICAL) 🚨
+Robot Framework interprets `#` as a comment start. ALWAYS escape ID selectors with a backslash.
+- **Correct**: `\#query`, `\#search-btn`
+- **Incorrect**: `#query`, `#search-btn`
+- **Usage Example**: `Fill Text    \#query    Search Term`
+
 - **Correct (Positional)**:
   - `New Page    ${URL}`
   - `Type Text    ${selector}    Search Term`

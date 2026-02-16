@@ -13,6 +13,12 @@ ${analysis_results.map(r => `- ${r.description}: ${r.selector}`).join('\n')}
   }
 
   const strictGuidelines = `
+## 0. ID SELECTOR ESCAPING (HIGHEST PRIORITY)
+- EVERY CSS selector starting with '#' MUST be escaped with a SINGLE backslash: \\#id-name.
+- Robot Framework will FAIL if you use '#id-name' because it thinks it's a comment.
+- CORRECT: | Fill Text | \\#query | AI |
+- INCORRECT: | Fill Text | #query | AI |
+
 ## 1. Sections (MANDATORY)
 - Always include: *** Settings ***, *** Variables ***, *** Test Cases ***, *** Keywords ***.
 - *** Settings *** MUST include:
@@ -33,11 +39,18 @@ ${analysis_results.map(r => `- ${r.description}: ${r.selector}`).join('\n')}
   | | Create File | debug.html | \${html} |
 
 ## 5. VALID KEYWORDS (DO NOT GUESS)
+- Waiting: ALWAYS use 'Wait For Elements State'. NEVER use 'Wait For Selector' or 'Wait For Element'.
 - Multiple elements: 'Get Elements'. (DO NOT use Query Selector All)
 - Single element: 'Get Element'. (DO NOT use Query Selector)
 - JSON String: Use '| \${json} | Evaluate | json.dumps(\${data}, indent=4) |'. (DO NOT use Convert To Json)
 
-## 6. REFERENCE EXAMPLE:
+## 6. SELF-CORRECTION RULES (AVOID COMMON BUGS)
+- **Rule 0 (Separator)**: ALWAYS use at least 4 spaces or a pipe (|) between keyword and arguments. Robot Framework will fail if you use only 1 space.
+- **Rule 1 (List Assignment)**: ALWAYS use scalar syntax $\{elements\} to store Get Elements. NEVER use @{elements} for assignment.
+- **Rule 2 (Mandatory Wait)**: BEFORE using Get Elements or Get Text, you MUST explicitly wait for that element.
+- **Rule 3 (Looping)**: In FOR loops, use @{list_variable} format.
+
+## 7. REFERENCE EXAMPLE:
 | *** Settings *** |
 | Library | Browser |
 | Library | JSONLibrary |
@@ -56,6 +69,7 @@ ${analysis_results.map(r => `- ${r.description}: ${r.selector}`).join('\n')}
 | | New Page | https://www.naver.com |
 
 | Search AI |
+| | Wait For Elements State | \\#query | visible | 10s |
 | | Fill Text | \\#query | AI |
 | | Press Keys | \\#query | Enter |
 | | Wait For Load State | networkidle |

@@ -7,6 +7,14 @@ import { RobotRunner } from '../services/runner.js';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import fs_node from 'fs';
+import readline from 'readline';
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+const askQuestion = (query) => new Promise((resolve) => rl.question(query, resolve));
 
 async function main() {
   const args = process.argv.slice(2);
@@ -55,33 +63,57 @@ async function main() {
   const uuid = uuidv4();
   console.log(`Starting agent for: "${requirement}" (ID: ${uuid})`);
 
-  try {
-    const result = await graph.invoke({
-      requirement,
-      html_content,
-      analysis_goal,
-      uuid,
-      retryCount: 0,
-      history: []
-    });
+  let currentState = {
+    requirement,
+    html_content,
+    analysis_goal,
+    uuid,
+    retryCount: 0,
+    history: []
+  };
 
-    console.log('\n=======================================');
-    console.log('--- AGENT EXECUTION SUMMARY ---');
-    console.log(`Title: ${result.title}`);
-    console.log(`Total Retries: ${result.retryCount}`);
-    
-    if (result.isSuccess) {
-      console.log('STATUS: SUCCESS (Intent Met)');
-    } else if (result.retryCount >= 5) {
-      console.log('STATUS: FAILED (Max Retries Reached)');
-    } else {
-      console.log('STATUS: FINISHED');
+  let keepGoing = true;
+  let totalRetriesAcrossSessions = 0;
+
+  try {
+    while (keepGoing) {
+      const result = await graph.invoke(currentState);
+      totalRetriesAcrossSessions += result.retryCount;
+
+      console.log('\n=======================================');
+      console.log('--- AGENT EXECUTION SUMMARY ---');
+      console.log(`Title: ${result.title}`);
+      console.log(`Session Retries: ${result.retryCount}`);
+      console.log(`Cumulative Retries: ${totalRetriesAcrossSessions}`);
+      
+      if (result.isSuccess) {
+        console.log('STATUS: SUCCESS (Intent Met)');
+        keepGoing = false;
+      } else if (result.retryCount >= 10) {
+        console.log('STATUS: PAUSED (Max Retries Reached)');
+        const answer = await askQuestion('\nMax retries reached. Do you want to try another 10 times? (y/n): ');
+        if (answer.toLowerCase() === 'y') {
+          console.log('Continuing for another 10 retries...\n');
+          // Update state for next 10 retries
+          currentState = {
+            ...result,
+            retryCount: 0 // Reset retry count for the next graph session
+          };
+        } else {
+          console.log('Stopping execution.');
+          keepGoing = false;
+        }
+      } else {
+        console.log('STATUS: FINISHED');
+        keepGoing = false;
+      }
+      console.log('=======================================\n');
     }
-    console.log('=======================================\n');
   } catch (error) {
     console.error('Error during agent execution:', error);
   } finally {
     await db.close();
+    rl.close();
   }
 }
 
