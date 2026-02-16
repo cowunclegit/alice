@@ -6,7 +6,7 @@ Extends `BaseChatModel` from `@langchain/core`.
 
 ### Configuration (Fields)
 - `apiKey`: string (Mandatory)
-- `modelName`: string (Default: `gemini-1.5-pro`)
+- `modelName`: string (Default: `gemini-2.5-flash`)
 - `temperature`: number (Default: 0.7)
 - `maxOutputTokens`: number (Optional)
 

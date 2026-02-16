@@ -70,18 +70,19 @@ As a Developer, I want the agent to automatically fix errors in the generated sc
 
 ---
 
-### User Story 3 - Transparent Planning (Priority: P3)
+### User Story 3 - Semantic Evaluation & Success Signaling (Priority: P3)
 
-As a Technical Lead, I want to see the execution plan before the code is written so that I can verify the agent's logic and approach.
+As a Developer, I want the agent to evaluate its own results against my intent and signal "SUCCESS" so that I can trust the task is truly finished.
 
-**Why this priority**: Important for trust and interpretability, though the core function can work without visible plans.
+**Why this priority**: Final quality gate. Ensures the loop only closes when the user's goal is actually met.
 
-**Independent Test**: Can be tested by checking the agent's logs or output for a structured "Plan" before any `.robot` files are created.
+**Independent Test**: Provide a requirement that the script meets technically but fails semantically; verify the agent detects this and continues the loop.
 
 **Acceptance Scenarios**:
 
-1. **Given** a user request, **When** the Planner phase starts, **Then** a step-by-step logic plan must be generated.
-2. **Given** an execution failure, **When** the Debugger is triggered, **Then** the plan must be updated to reflect the debugging strategy.
+1. **Given** a finished execution, **When** the SemanticEvaluator node runs, **Then** it must compare results against original intent using logs and screenshots.
+2. **Given** a successful semantic match, **When** the process concludes, **Then** an explicit "SUCCESS" token must be output.
+3. **Given** a semantic mismatch, **When** attempts remain, **Then** the agent must return to the Planner for re-planning.
 
 ---
 

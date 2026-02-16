@@ -18,7 +18,7 @@ import { HumanMessage } from '@langchain/core/messages';
 
 const model = new GeminiChatModel({
   apiKey: process.env.GEMINI_API_KEY,
-  modelName: 'gemini-1.5-flash'
+  modelName: 'gemini-2.5-flash'
 });
 
 const response = await model.invoke([

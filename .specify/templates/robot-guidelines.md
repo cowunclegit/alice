@@ -10,6 +10,11 @@
 *   **Keyword Driven:** Avoid putting raw logic in tests; encapsulate logic in user-defined keywords.
 *   **Documentation:** Use `[Documentation]` in test cases for clarity.
 *   **Cleanup:** Always include `[Teardown]` to close browsers or close connections to ensure stability.
+*   **Browser Library Specifics**:
+    *   **Selectors**: Use CSS selectors by default.
+    *   **Press Keys**: Do NOT use `key=Enter`. Use `Press Keys    ${selector}    Enter`.
+    *   **Type Text**: Use `enter=True` to submit if needed: `Type Text    ${selector}    Text    enter=True`.
+    *   **Arguments**: Prefer positional arguments over named arguments (avoid `selector=`, `key=`).
 
 ## 3. LLM Prompting Guidelines
 *   **Virtual Environment:** Instruct the LLM to start by creating and activating a `venv`.

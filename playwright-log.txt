@@ -1,0 +1,60 @@
+{"level":30,"time":"2026-02-16T15:07:54.852Z","pid":15831,"hostname":"iMac27.local","msg":"Listening on 127.0.0.1:54720"}
+(node:15831) DeprecationWarning: Calling start() is no longer necessary. It can be safely omitted.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"level":30,"time":"2026-02-16T15:07:55.912Z","pid":15831,"hostname":"iMac27.local","msg":"Start of node method newBrowser"}
+{"level":30,"time":"2026-02-16T15:07:56.408Z","pid":15831,"hostname":"iMac27.local","msg":"Adding browser to stack: chromium, version: 136.0.7103.25"}
+{"level":30,"time":"2026-02-16T15:07:56.409Z","pid":15831,"hostname":"iMac27.local","msg":"End of node method newBrowser"}
+{"level":30,"time":"2026-02-16T15:07:56.409Z","pid":15831,"hostname":"iMac27.local","msg":"Adding 0 contexts to browser"}
+{"level":30,"time":"2026-02-16T15:07:56.417Z","pid":15831,"hostname":"iMac27.local","msg":"currentBrowser: [object Object]"}
+{"level":30,"time":"2026-02-16T15:07:56.442Z","pid":15831,"hostname":"iMac27.local","msg":"Changed active context"}
+{"level":30,"time":"2026-02-16T15:07:56.416Z","pid":15831,"hostname":"iMac27.local","msg":"Start of node method newPage"}
+{"level":30,"time":"2026-02-16T15:07:57.048Z","pid":15831,"hostname":"iMac27.local","msg":"Video path: undefined"}
+{"level":30,"time":"2026-02-16T15:07:57.049Z","pid":15831,"hostname":"iMac27.local","msg":"Changed active page"}
+{"level":30,"time":"2026-02-16T15:07:57.737Z","pid":15831,"hostname":"iMac27.local","msg":"End of node method newPage"}
+{"level":30,"time":"2026-02-16T15:07:57.743Z","pid":15831,"hostname":"iMac27.local","msg":"Start of node method WaitForPageLoadState"}
+{"level":30,"time":"2026-02-16T15:07:57.744Z","pid":15831,"hostname":"iMac27.local","msg":"timeout: 10000 state: networkidle"}
+{"level":30,"time":"2026-02-16T15:07:58.546Z","pid":15831,"hostname":"iMac27.local","msg":"End of node method WaitForPageLoadState"}
+{"level":30,"time":"2026-02-16T15:07:58.550Z","pid":15831,"hostname":"iMac27.local","msg":"Start of node method fillText"}
+{"level":30,"time":"2026-02-16T15:07:58.550Z","pid":15831,"hostname":"iMac27.local","msg":"Strict mode is enabled, find Locator with textarea[name='q'] in page."}
+{"level":30,"time":"2026-02-16T15:07:58.588Z","pid":15831,"hostname":"iMac27.local","msg":"End of node method fillText"}
+{"level":30,"time":"2026-02-16T15:07:58.593Z","pid":15831,"hostname":"iMac27.local","msg":"Start of node method press"}
+{"level":30,"time":"2026-02-16T15:07:58.593Z","pid":15831,"hostname":"iMac27.local","msg":"Strict mode is enabled, find Locator with textarea[name='q'] in page."}
+{"level":30,"time":"2026-02-16T15:07:58.776Z","pid":15831,"hostname":"iMac27.local","msg":"End of node method press"}
+{"level":30,"time":"2026-02-16T15:07:58.780Z","pid":15831,"hostname":"iMac27.local","msg":"Start of node method WaitForPageLoadState"}
+{"level":30,"time":"2026-02-16T15:07:58.780Z","pid":15831,"hostname":"iMac27.local","msg":"timeout: 10000 state: networkidle"}
+{"level":30,"time":"2026-02-16T15:08:01.358Z","pid":15831,"hostname":"iMac27.local","msg":"End of node method WaitForPageLoadState"}
+{"level":30,"time":"2026-02-16T15:08:01.366Z","pid":15831,"hostname":"iMac27.local","msg":"Start of node method closeBrowser"}
+{"level":30,"time":"2026-02-16T15:08:01.386Z","pid":15831,"hostname":"iMac27.local","msg":"Removed page=05b6ac70-c69b-4dbd-89c5-3818e8bbba2c from context=918113d1-c74c-43bf-8496-d440ef366175 page stack"}
+{"level":30,"time":"2026-02-16T15:08:01.668Z","pid":15831,"hostname":"iMac27.local","msg":"End of node method closeBrowser"}
+================= Original suppressed error =================
+Error: Browser has been closed.
+    at PlaywrightState.getActiveBrowser (/usr/local/anaconda3/lib/python3.11/site-packages/Browser/wrapper/index.js:12226:15)
+    at PlaywrightServer.getActiveBrowser (/usr/local/anaconda3/lib/python3.11/site-packages/Browser/wrapper/index.js:13122:59)
+    at PlaywrightServer.setTimeout (/usr/local/anaconda3/lib/python3.11/site-packages/Browser/wrapper/index.js:13370:57)
+    at Object.onReceiveHalfClose (/usr/local/anaconda3/lib/python3.11/site-packages/Browser/wrapper/node_modules/@grpc/grpc-js/build/src/server.js:1461:25)
+    at BaseServerInterceptingCall.maybePushNextMessage (/usr/local/anaconda3/lib/python3.11/site-packages/Browser/wrapper/node_modules/@grpc/grpc-js/build/src/server-interceptors.js:575:31)
+    at BaseServerInterceptingCall.handleEndEvent (/usr/local/anaconda3/lib/python3.11/site-packages/Browser/wrapper/node_modules/@grpc/grpc-js/build/src/server-interceptors.js:615:14)
+    at ServerHttp2Stream.<anonymous> (/usr/local/anaconda3/lib/python3.11/site-packages/Browser/wrapper/node_modules/@grpc/grpc-js/build/src/server-interceptors.js:382:18)
+    at ServerHttp2Stream.emit (node:events:519:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+=============================================================
+{"level":30,"time":"2026-02-16T15:08:01.673Z","pid":15831,"hostname":"iMac27.local","msg":"Start of node method getBrowserCatalog"}
+{"level":30,"time":"2026-02-16T15:08:01.674Z","pid":15831,"hostname":"iMac27.local","msg":"End of node method getBrowserCatalog"}
+================= Original suppressed error =================
+Error: Browser has been closed.
+    at PlaywrightState.getActiveBrowser (/usr/local/anaconda3/lib/python3.11/site-packages/Browser/wrapper/index.js:12226:15)
+    at PlaywrightServer.getActiveBrowser (/usr/local/anaconda3/lib/python3.11/site-packages/Browser/wrapper/index.js:13122:59)
+    at PlaywrightServer.setTimeout (/usr/local/anaconda3/lib/python3.11/site-packages/Browser/wrapper/index.js:13370:57)
+    at Object.onReceiveHalfClose (/usr/local/anaconda3/lib/python3.11/site-packages/Browser/wrapper/node_modules/@grpc/grpc-js/build/src/server.js:1461:25)
+    at BaseServerInterceptingCall.maybePushNextMessage (/usr/local/anaconda3/lib/python3.11/site-packages/Browser/wrapper/node_modules/@grpc/grpc-js/build/src/server-interceptors.js:575:31)
+    at BaseServerInterceptingCall.handleEndEvent (/usr/local/anaconda3/lib/python3.11/site-packages/Browser/wrapper/node_modules/@grpc/grpc-js/build/src/server-interceptors.js:615:14)
+    at ServerHttp2Stream.<anonymous> (/usr/local/anaconda3/lib/python3.11/site-packages/Browser/wrapper/node_modules/@grpc/grpc-js/build/src/server-interceptors.js:382:18)
+    at ServerHttp2Stream.emit (node:events:519:35)
+    at endReadableNT (node:internal/streams/readable:1701:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+=============================================================
+{"level":30,"time":"2026-02-16T15:08:01.678Z","pid":15831,"hostname":"iMac27.local","msg":"Start of node method getBrowserCatalog"}
+{"level":30,"time":"2026-02-16T15:08:01.678Z","pid":15831,"hostname":"iMac27.local","msg":"End of node method getBrowserCatalog"}
+{"level":30,"time":"2026-02-16T15:08:01.700Z","pid":15831,"hostname":"iMac27.local","msg":"Start of node method closeAllBrowsers"}
+{"level":30,"time":"2026-02-16T15:08:01.700Z","pid":15831,"hostname":"iMac27.local","msg":"End of node method closeAllBrowsers"}

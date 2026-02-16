@@ -11,11 +11,10 @@ These guidelines MUST be followed by the Coder agent when generating `.robot` sc
 - Wrap headers with exactly three asterisks and a single space: `*** Section Name ***`.
 
 ## 2. Formatting & Spacing (CRITICAL)
-- **The Golden Rule**: Robot Framework uses **two or more spaces** (or a tab) as a separator between keywords and arguments. 
-- **Single Spaces**: A single space is considered part of the keyword or argument name itself (e.g., `Open Browser` is one token).
-- **Separator**: Use exactly **4 spaces** as the cell separator to avoid ambiguity and ensure compatibility across all editors.
+- **The Golden Rule**: Robot Framework uses **two or more spaces** as a separator between keywords and arguments. 
+- **Separator**: Use exactly **4 spaces** as the cell separator. DO NOT use TABS.
 - **Indentation**: Keywords within a Test Case or a User Keyword MUST be indented with exactly 4 spaces.
-- **Trailing Spaces**: Avoid trailing spaces at the end of lines as they can cause unexpected behavior in some parsers.
+- **Trailing Spaces**: Avoid trailing spaces at the end of lines.
 - **Empty Cells**: If an argument is empty, use `${EMPTY}` or leave the space clear with the 4-space separator.
 
 ## 3. Continuations
@@ -38,6 +37,46 @@ These guidelines MUST be followed by the Coder agent when generating `.robot` sc
 - All web automation MUST use the `Browser` library.
 - Keywords should be written in **Title Case** (e.g., `New Page`, `Fill Text`).
 - Arguments follow the keyword, separated by 4 spaces.
+
+### 🚨 NO NAMED ARGUMENTS (MANDATORY) 🚨
+DO NOT use `selector=`, `key=`, `keys=`, `txt=`, `url=`, `state=`, `property=`, or `path=`. 
+Using these labels often causes "expected X arguments, got 1" errors. ALWAYS use **Positional Arguments** (values only).
+
+### 🚨 MANDATORY LIBRARY RULES 🚨
+1. **JSONLibrary**: 
+   - ALWAYS use `Convert String to JSON`.
+   - NEVER use `Convert To Json` (it does not exist in standard JSONLibrary).
+2. **Positional Only**: Continue to follow the **NO NAMED ARGUMENTS** rule for all library keywords.
+
+- **Correct (Positional)**:
+  - `New Page    ${URL}`
+  - `Type Text    ${selector}    Search Term`
+  - `Fill Text    ${selector}    Search Term`
+  - `Press Keys    ${selector}    Enter`
+  - `Wait For Elements State    ${selector}    visible    10s`
+  - `Get Property    ${selector}    outerHTML`
+  - `Create File    ${file_path}    ${content}    UTF-8`
+  - `Convert String to JSON    ${json_string}`
+
+- **Forbidden**:
+  - ❌ `Convert To Json    ${json_string}`
+  - ❌ `New Page    url=${URL}`
+
+- **Correct HTML Capture**:
+  - BAD: `Get Page Content` (Does not exist)
+  - GOOD: `Get Property    html    outerHTML` (Captures full page HTML)
+  - GOOD: `Get Property    ${selector}    outerHTML` (Captures specific element HTML)
+
+## 9. Examples
+### Clean Positional Style (Reference)
+```robotframework
+*** Keywords ***
+Perform Search
+    Wait For Elements State    ${SEARCH_INPUT_SELECTOR}    visible    10s
+    Type Text    ${SEARCH_INPUT_SELECTOR}    AI
+    Press Keys    ${SEARCH_INPUT_SELECTOR}    Enter
+    Wait For Elements State    ${MAIN_CONTENT_SELECTOR}    visible    15s
+```
 
 ## 6. Control Structures (Modern Syntax)
 - Always use `END` to close `IF`, `FOR`, `WHILE`, and `TRY` blocks.

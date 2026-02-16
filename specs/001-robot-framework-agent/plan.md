@@ -55,12 +55,14 @@ specs/001-robot-framework-agent/
 src/
 ├── agents/              # Langgraph nodes (Planner, Coder, Evaluator, Debugger)
 ├── services/
-│   ├── llm.js           # Abstract LLM base / common extraction logic
+│   ├── llm.js           # Base LLM class
 │   ├── gemini.js        # Gemini-specific implementation
 │   ├── database.js      # SQLite3 service
 │   └── runner.js        # Robot Framework executor
 ├── cli/                 # User interface
-└── lib/                 # Shared utilities (e.g., json-parser.js)
+└── lib/
+    ├── json-parser.js   # 2-Tier extraction logic (Priority 1: Markdown, 2: Brace matching)
+    └── utils.js         # General helpers
 
 tests/
 ├── integration/         # E2E agentic flows

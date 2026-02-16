@@ -1,0 +1,25 @@
+***Settings***
+Library           Browser
+Library           OperatingSystem
+
+***Variables***
+${SEARCH_TERM}    AI
+${RESULT_FILE}    result.json
+
+***Test Cases***
+Naver AI Search and Result Saving
+    Open Naver and Search
+    Save Search Results
+
+***Keywords***
+Open Naver and Search
+    New Browser    headless=True
+    New Page    https://www.naver.com
+    Fill Text    #query    ${SEARCH_TERM}
+    Press Keys    #query    ENTER
+    Wait Until Page Contains Element    xpath://*[@id="main_pack"]    timeout=30s
+
+Save Search Results
+    Get Page Source    source
+    Create File    ${RESULT_FILE}    ${source}
+    Close Browser

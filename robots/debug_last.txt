@@ -1,0 +1,42 @@
+*** Settings ***
+Library           Browser
+Library           OperatingSystem
+Library           Collections
+
+*** Variables ***
+${NAVER_URL}      https://www.naver.com
+${SEARCH_KEYWORD}   AI
+${SEARCH_INPUT}     #query
+${SEARCH_BUTTON}    .ico_search_submit
+${RESULT_ELEMENT}   .lst_total
+${RESULT_FILE}      result.json
+
+*** Test Cases ***
+Naver AI Search and Save Results
+    Open Naver
+    Search For AI
+    Extract And Save Results
+
+*** Keywords ***
+Open Naver
+    New Browser    headless=True
+    New Context
+    New Page    about:blank
+    Go To    ${NAVER_URL}
+
+Search For AI
+    Fill Text    ${SEARCH_INPUT}    ${SEARCH_KEYWORD}
+    Click    ${SEARCH_BUTTON}
+    Wait For Elements State    ${RESULT_ELEMENT}    visible    30s
+
+Extract And Save Results
+    ${elements}=    Get Elements    ${RESULT_ELEMENT}
+    ${data}=    Create Dictionary    results=${EMPTY}
+    ${list}=    Create List
+    FOR    ${element}    IN    @{elements}
+        ${text}=    Get Text    ${element}
+        Append To List    ${list}    ${text}
+    END
+    Set To Dictionary    ${data}    results    ${list}
+    ${json_string}=    Evaluate    json.dumps($data)    modules=json
+    Create File    ${RESULT_FILE}    ${json_string}

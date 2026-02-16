@@ -1,0 +1,21 @@
+{
+  "name": "alice-mk4",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Robot Framework Coding Agent with Langgraph.js",
+  "main": "src/cli/index.js",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "lint": "eslint src/**"
+  },
+  "dependencies": {
+    "@langchain/core": "^0.3.38",
+    "@langchain/langgraph": "^0.2.49",
+    "dotenv": "^16.4.7",
+    "sqlite3": "^5.1.7",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

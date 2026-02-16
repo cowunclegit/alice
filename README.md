@@ -1,36 +1,38 @@
-# Alice MK4: Robot Framework Coding Agent
+# Robot Framework Coding Agent
 
-Autonomous agent loop using Langgraph.js that plans, codes, executes, and self-heals Robot Framework scripts.
+Autonomous agent that plans, codes, executes, and self-heals Robot Framework tests using Langgraph.js and Gemini API.
 
 ## Setup
 
-1. **Node.js**: Ensure you have Node.js v20+ installed.
-2. **Python**: Ensure Python 3.10+ and Robot Framework are installed.
-   ```bash
-   pip install robotframework robotframework-browser
-   rfbrowser init
-   ```
-3. **Dependencies**:
-   ```bash
-   npm install
-   npx playwright install chromium
-   ```
-4. **Environment**: Create a `.env` file with:
-   ```env
-   LLM_API_URL=your_custom_llm_api_url
-   LLM_API_KEY=your_api_key
-   ```
+1.  **Clone the repository**.
+2.  **Install Python dependencies**:
+    ```bash
+    pip install robotframework robotframework-browser
+    rfbrowser init
+    ```
+3.  **Install Node.js dependencies**:
+    ```bash
+    npm install
+    ```
+4.  **Configure Environment**:
+    Create a `.env` file with:
+    ```env
+    GEMINI_API_KEY=your_api_key_here
+    ```
 
 ## Usage
 
 Run the agent with a natural language requirement:
+
 ```bash
-node src/cli/index.js "Verify that example.com has a login button"
+node src/cli/index.js "Verify that the search functionality on example.com works correctly"
 ```
 
-## Features
+## Architecture
 
-- **Autonomous Loop**: Planner -> Coder -> Executor -> Semantic Evaluator.
-- **Self-Healing**: Automatically debugs and retries on technical or semantic failure (up to 5 times).
-- **Traceability**: Full audit trail of every agent transition in SQLite.
-- **Retention**: Automatic 30-day cleanup of old scripts and reports.
+- **Planner**: Parses requirement into a step-by-step plan.
+- **Coder**: Generates `.robot` script using the Browser library.
+- **Executor**: Runs the script and captures results.
+- **Recorder**: Persists execution trace to SQLite.
+- **Debugger**: Proposes fixes for technical failures.
+- **Evaluator**: Semantically verifies results against user intent.
