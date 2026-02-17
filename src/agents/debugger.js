@@ -2,12 +2,20 @@ import { extractJson } from '../lib/json-parser.js';
 
 export async function debuggerNode(state, config) {
   const { llm } = config;
-  const { executionResult, scriptContent, retryCount, analysis_results } = state;
+  const { executionResult, scriptContent, retryCount, analysis_results, element_inventory } = state;
 
   console.log(`\n[Debugger] Analyzing failure (Attempt ${retryCount + 1})...`);
+  console.log(`[Debugger] 🔍 Data Check - Inventory present: ${!!element_inventory}, Analysis results: ${analysis_results?.length || 0}`);
   
   let analyzerContext = '';
-  if (analysis_results && analysis_results.length > 0) {
+  if (element_inventory) {
+    analyzerContext = `
+### CURRENT PAGE ELEMENT INVENTORY:
+The following elements are ACTUALLY present on the page where the failure occurred. 
+YOU MUST use these elements to fix your selectors. Do not guess.
+${element_inventory}
+`;
+  } else if (analysis_results && analysis_results.length > 0) {
     analyzerContext = `
 CRITICAL: The Analyzer has found the following CORRECT selectors from the actual page HTML:
 ${analysis_results.map(r => `- ${r.description}: ${r.selector}`).join('\n')}
@@ -30,7 +38,7 @@ CRITICAL RULES (STRICT ENFORCEMENT):
    - BEFORE using Get Elements or Get Text, you MUST explicitly wait for that element.
 4. LIBRARIES: Use Browser, OperatingSystem, JSONLibrary, Collections.
 5. JSON: Use '| \${json} | Evaluate | json.dumps(\${data}, indent=4) |'. NEVER use 'Convert To Json'.
-6. HTML CAPTURE: ALWAYS use 'debug.html' as the filename and 'Get Property | html | outerHTML' to get content. Ensure a 'Test Teardown' with 'Capture HTML' is present.
+6. HTML CAPTURE: ALWAYS use 'debug.html' as the filename and 'Get Property | html | outerHTML' to get content. ALWAYS write to \${OUTPUT DIR}\${/}debug.html. Ensure a 'Test Teardown' with 'Capture HTML' is present.
 7. KEYWORDS: Use 'Get Elements' or 'Get Element'. NEVER use 'Query Selector'.
 8. WAITING: ALWAYS use 'Wait For Elements State'. NEVER use 'Wait For Selector' or 'Wait For Element'.
 9. SEPARATORS: Ensure at least 4 spaces or | are used. If the error says "No keyword with name 'X Y'", it usually means a missing separator between 'X' and 'Y'.

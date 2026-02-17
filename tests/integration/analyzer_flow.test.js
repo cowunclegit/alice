@@ -45,11 +45,10 @@ describe('Analyzer Flow Integration', () => {
     });
 
     expect(mockLlm.invoke).toHaveBeenCalledTimes(5); // Planner, Analyzer, Coder, Evaluator, Finalizer
-    expect(result.analysis_results).toBeDefined();
-    expect(result.analysis_results[0].selector).toBe('input[name="q"]');
+    expect(result.element_inventory).toBeDefined();
     
-    // Verify Coder was called with analysis_results
+    // Verify Coder was called with inventory info
     const coderCall = mockLlm.invoke.mock.calls[2]; // 3rd call is Coder
-    expect(coderCall[0][0].content).toContain('input[name="q"]');
+    expect(coderCall[0][0].content).toContain('CURRENT PAGE ELEMENT INVENTORY');
   });
 });

@@ -53,6 +53,32 @@ async function main() {
   const fs = new FilesystemService('./robots');
   const runner = new RobotRunner();
 
+  // --- FORCE INITIALIZE LOGGING ---
+  const logDir = path.resolve('./robots');
+  if (!fs_node.existsSync(logDir)) fs_node.mkdirSync(logDir, { recursive: true });
+  const logFilePath = path.join(logDir, 'agent_debug.log');
+  
+  // Reset log file at start
+  fs_node.writeFileSync(logFilePath, `--- Agent Debug Log Started at ${new Date().toLocaleString()} ---\n`, 'utf8');
+
+  const originalLog = console.log;
+  const originalError = console.error;
+
+  originalLog(`\n[System] 📝 Debug logs are being recorded to: ${logFilePath}\n`);
+
+  console.log = (...args) => {
+    const msg = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' ');
+    originalLog(...args);
+    fs_node.appendFileSync(logFilePath, `[${new Date().toISOString().replace('T', ' ').substring(0, 19)}] ${msg}\n`, 'utf8');
+  };
+
+  console.error = (...args) => {
+    const msg = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' ');
+    originalError(...args);
+    fs_node.appendFileSync(logFilePath, `[${new Date().toISOString().replace('T', ' ').substring(0, 19)}] ERROR: ${msg}\n`, 'utf8');
+  };
+  // ---------------------------------
+
   // Run cleanup
   fs.cleanupOldFiles(30);
 

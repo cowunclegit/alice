@@ -2,16 +2,19 @@ import { extractJson } from '../lib/json-parser.js';
 
 export async function evaluatorNode(state, config) {
   const { llm } = config;
-  const { requirement, executionResult, current_url, analysis_results } = state;
+  const { requirement, executionResult, current_url, element_inventory } = state;
 
   console.log('\n[Evaluator] Performing semantic verification of results...');
 
   const systemPrompt = `You are a Robot Framework Semantic Evaluator.
 Compare the execution result and the CURRENT page state against the original user intent.
 
+CURRENT PAGE STATE (ELEMENT INVENTORY):
+${element_inventory || 'No inventory available'}
+
 Consider:
 1. Did the script reach the correct page? (Current URL: ${current_url})
-2. Are the required elements present? (Analyzed Selectors: ${JSON.stringify(analysis_results)})
+2. Based on the inventory, are the required results or state changes visible?
 3. Even if exitCode is 0, is the outcome semantically correct?
 
 Return the response strictly as a SINGLE JSON object.

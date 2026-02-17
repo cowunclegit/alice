@@ -62,7 +62,6 @@ export async function executorNode(state, config) {
   const scriptFilename = `${uuid}.robot`;
   await fs.saveScript(uuid, finalContent);
   console.log('[Executor] Normalized script content:\n--------------------------\n' + finalContent + '\n--------------------------');
-  console.log('[Executor] Normalized script (escaped):\n' + JSON.stringify(finalContent));
 
   const resultsDir = path.join('robots', 'results', uuid);
   const result = await runner.execute(path.join('robots', scriptFilename), resultsDir);
@@ -73,9 +72,9 @@ export async function executorNode(state, config) {
   try {
     const debugHtmlPath = path.join(resultsDir, 'debug.html');
     html_content = await fs.readFile(debugHtmlPath);
-    console.log('[Executor] Captured debug.html for analysis.');
+    console.log(`[Executor] ✅ Captured debug.html (${html_content.length} chars) for analysis.`);
   } catch (e) {
-    // No debug.html found, which is fine
+    console.log(`[Executor] ⚠️ Could not read debug.html from ${resultsDir}. Analyzer might be skipped.`);
   }
 
   if (result.exitCode !== 0) {
@@ -104,7 +103,9 @@ export async function executorNode(state, config) {
 
   return {
     executionResult: result,
-    html_content,
+    html_content, // Latest HTML (or null if failed to capture)
+    element_inventory: null, // Clear old inventory so Analyzer can rebuild it
+    analysis_results: [],    // Clear old results
     current_url,
     analysis_goal
   };

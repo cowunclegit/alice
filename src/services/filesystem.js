@@ -31,6 +31,20 @@ export class FilesystemService {
     return fs.readFileSync(filePath, 'utf8');
   }
 
+  initLog() {
+    const logPath = path.join(this.baseDir, 'agent_debug.log');
+    const startMsg = `--- Agent Debug Log Started at ${new Date().toLocaleString()} ---\n`;
+    fs.writeFileSync(logPath, startMsg, { encoding: 'utf8', flag: 'w' });
+  }
+
+  log(message) {
+    const logPath = path.join(this.baseDir, 'agent_debug.log');
+    const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    const msg = typeof message === 'object' ? JSON.stringify(message, null, 2) : String(message);
+    // Use appendFileSync with 'as' flag to ensure it's written immediately
+    fs.appendFileSync(logPath, `[${timestamp}] ${msg}\n`, { encoding: 'utf8' });
+  }
+
   saveResult(uuid, name, content) {
     const sessionResultDir = path.join(this.resultsDir, uuid);
     if (!fs.existsSync(sessionResultDir)) {

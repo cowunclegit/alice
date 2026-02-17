@@ -1,11 +1,17 @@
 export async function coderNode(state, config) {
   const { llm } = config;
-  const { plan, title, description, analysis_results } = state;
+  const { plan, title, description, analysis_results, element_inventory } = state;
 
   console.log('\n[Coder] Generating Robot Framework script...');
 
   let contextInfo = '';
-  if (analysis_results && analysis_results.length > 0) {
+  if (element_inventory) {
+    contextInfo = `
+### CURRENT PAGE ELEMENT INVENTORY:
+The following elements were found on the actual page. USE THESE to build your selectors:
+${element_inventory}
+`;
+  } else if (analysis_results && analysis_results.length > 0) {
     contextInfo = `
 CRITICAL: Use these analyzed selectors for higher accuracy:
 ${analysis_results.map(r => `- ${r.description}: ${r.selector}`).join('\n')}
@@ -34,9 +40,10 @@ ${analysis_results.map(r => `- ${r.description}: ${r.selector}`).join('\n')}
 ## 4. HTML CAPTURE (CRITICAL FOR ANALYZER)
 - ALWAYS use the name 'debug.html'. NEVER use other names.
 - ALWAYS use 'Get Property | html | outerHTML' to get HTML.
+- ALWAYS write the file to \${OUTPUT DIR} using: \${OUTPUT DIR}\${/}debug.html
 - AFTER every page transition AND in the Teardown, capture the HTML:
   | | \${html} | Get Property | html | outerHTML |
-  | | Create File | debug.html | \${html} |
+  | | Create File | \${OUTPUT DIR}\${/}debug.html | \${html} |
 
 ## 5. VALID KEYWORDS (DO NOT GUESS)
 - Waiting: ALWAYS use 'Wait For Elements State'. NEVER use 'Wait For Selector' or 'Wait For Element'.
@@ -67,6 +74,7 @@ ${analysis_results.map(r => `- ${r.description}: ${r.selector}`).join('\n')}
 | Start Session |
 | | New Browser | chromium | headless=True |
 | | New Page | https://www.naver.com |
+| | Capture HTML |
 
 | Search AI |
 | | Wait For Elements State | \\#query | visible | 10s |
@@ -77,7 +85,11 @@ ${analysis_results.map(r => `- ${r.description}: ${r.selector}`).join('\n')}
 
 | Capture HTML |
 | | \${html} | Get Property | html | outerHTML |
-| | Create File | debug.html | \${html} |
+| | Create File | \${OUTPUT DIR}\${/}debug.html | \${html} |
+
+| Close Browser |
+| | Capture HTML |
+| | Browser.Close Browser |
 `;
 
   const systemPrompt = `You are a Robot Framework Expert.

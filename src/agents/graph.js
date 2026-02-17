@@ -12,60 +12,44 @@ export function createGraph(config) {
   const workflow = new StateGraph({
     channels: {
       requirement: null,
-      title: null,
-      description: null,
+      title: { reducer: (a, b) => b },
+      description: { reducer: (a, b) => b },
       plan: { reducer: (a, b) => b },
-      plan_status: null,
-      dynamicTimeout: null,
-      html_content: null,
-      current_url: null,
-      analysis_goal: null,
-      analysis_results: null,
-      analysis_strategy: null,
+      plan_status: { reducer: (a, b) => b },
+      dynamicTimeout: { reducer: (a, b) => b },
+      html_content: { reducer: (a, b) => b },
+      current_url: { reducer: (a, b) => b },
+      analysis_goal: { reducer: (a, b) => b },
+      analysis_results: { reducer: (a, b) => b },
+      analysis_strategy: { reducer: (a, b) => b },
+      element_inventory: { reducer: (a, b) => b },
       scriptContent: { reducer: (a, b) => b },
       uuid: null,
       executionResult: { reducer: (a, b) => b },
       retryCount: { reducer: (a, b) => b },
       analysis: { reducer: (a, b) => b },
       fixProposal: { reducer: (a, b) => b },
-      isSuccess: null,
-      needsReplan: null,
+      isSuccess: { reducer: (a, b) => b },
+      needsReplan: { reducer: (a, b) => b },
       history: { reducer: (a, b) => a.concat(b) }
     }
   });
 
-  workflow.addNode('planner', async (state) => {
-    console.log('\n--- Node: Planner ---');
-    return await plannerNode(state, config);
-  });
-  workflow.addNode('analyzer', async (state) => {
-    console.log('\n--- Node: Analyzer ---');
-    return await analyzerNode(state, config);
-  });
-  workflow.addNode('coder', async (state) => {
-    console.log('\n--- Node: Coder ---');
-    return await coderNode(state, config);
-  });
-  workflow.addNode('executor', async (state) => {
-    console.log('\n--- Node: Executor ---');
-    return await executorNode(state, config);
-  });
-  workflow.addNode('recorder', async (state) => {
-    console.log('\n--- Node: Recorder ---');
-    return await recorderNode(state, config);
-  });
-  workflow.addNode('debugger', async (state) => {
-    console.log('\n--- Node: Debugger ---');
-    return await debuggerNode(state, config);
-  });
-  workflow.addNode('evaluator', async (state) => {
-    console.log('\n--- Node: Evaluator ---');
-    return await evaluatorNode(state, config);
-  });
-  workflow.addNode('finalizer', async (state) => {
-    console.log('\n--- Node: Finalizer ---');
-    return await finalizerNode(state, config);
-  });
+  const wrapNode = (name, nodeFunc) => {
+    return async (state) => {
+      console.log(`\n--- Node: ${name.toUpperCase()} ---`);
+      return await nodeFunc(state, config);
+    };
+  };
+
+  workflow.addNode('planner', wrapNode('planner', plannerNode));
+  workflow.addNode('analyzer', wrapNode('analyzer', analyzerNode));
+  workflow.addNode('coder', wrapNode('coder', coderNode));
+  workflow.addNode('executor', wrapNode('executor', executorNode));
+  workflow.addNode('recorder', wrapNode('recorder', recorderNode));
+  workflow.addNode('debugger', wrapNode('debugger', debuggerNode));
+  workflow.addNode('evaluator', wrapNode('evaluator', evaluatorNode));
+  workflow.addNode('finalizer', wrapNode('finalizer', finalizerNode));
 
   workflow.setEntryPoint('planner');
   
@@ -81,7 +65,6 @@ export function createGraph(config) {
     }
   );
 
-  workflow.addEdge('analyzer', 'coder');
   workflow.addEdge('coder', 'executor');
   workflow.addEdge('executor', 'recorder');
 
@@ -90,7 +73,7 @@ export function createGraph(config) {
     (state) => {
       if (state.executionResult.exitCode !== 0) {
         if (state.retryCount >= 10) return 'finalizer';
-        if (state.html_content) return 'analyzer_healing'; // Go to analyzer but then to debugger
+        if (state.html_content) return 'analyzer_healing'; 
         return 'debugger';
       }
       return 'evaluator';
@@ -106,8 +89,9 @@ export function createGraph(config) {
   workflow.addConditionalEdges(
     'analyzer',
     (state) => {
-      // If we have an executionResult, we are in a healing loop
+      // If we have an executionResult, it means we came from a failure (healing loop)
       if (state.executionResult) return 'debugger';
+      // Otherwise, it's the initial analysis before coding
       return 'coder';
     },
     {
@@ -116,7 +100,7 @@ export function createGraph(config) {
     }
   );
 
-  workflow.addEdge('debugger', 'executor'); // Retry execution after fix
+  workflow.addEdge('debugger', 'executor'); // After fixing, try executing again
 
   workflow.addConditionalEdges(
     'evaluator',
