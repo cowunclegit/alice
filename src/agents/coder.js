@@ -1,63 +1,35 @@
 export async function coderNode(state, config) {
   const { llm } = config;
-  const { plan, title, description, analysis_results, element_inventory } = state;
+  const { plan, title, description, analysis_results, element_inventory, current_url, retryCount, page_history } = state;
 
-  console.log('\n[Coder] Generating Robot Framework script...');
+  console.log(`\n[Coder] 🚀 Node Start`);
+  console.log(`[Coder] 📂 State: URL=${current_url || 'N/A'}, Retry=${retryCount}, History=${page_history?.length || 0} steps`);
+  console.log('[Coder] Generating Robot Framework script...');
 
   let contextInfo = '';
   if (element_inventory) {
     contextInfo = `
 ### CURRENT PAGE ELEMENT INVENTORY:
-The following elements were found on the actual page. USE THESE to build your selectors:
 ${element_inventory}
-`;
-  } else if (analysis_results && analysis_results.length > 0) {
-    contextInfo = `
-CRITICAL: Use these analyzed selectors for higher accuracy:
-${analysis_results.map(r => `- ${r.description}: ${r.selector}`).join('\n')}
 `;
   }
 
   const strictGuidelines = `
-## 0. ID SELECTOR ESCAPING (HIGHEST PRIORITY)
-- EVERY CSS selector starting with '#' MUST be escaped with a SINGLE backslash: \\#id-name.
-- Robot Framework will FAIL if you use '#id-name' because it thinks it's a comment.
-- CORRECT: | Fill Text | \\#query | AI |
-- INCORRECT: | Fill Text | #query | AI |
+## 1. Robot Framework Syntax (Pipe Separated)
+- Every token MUST be separated by a pipe (|). Indented lines start with "| |".
+- **ID Escaping**: CSS selectors starting with '#' MUST be escaped with a single backslash: \\#id-name.
 
-## 1. Sections (MANDATORY)
+## 2. Mandatory Sections
 - Always include: *** Settings ***, *** Variables ***, *** Test Cases ***, *** Keywords ***.
-- *** Settings *** MUST include:
-  | Test Teardown | Capture HTML |
+- *** Settings *** must include: | Test Teardown | Capture HTML |
 
-## 2. Formatting (PIPE FORMAT)
-- Every token MUST be separated by a pipe (|).
-- Indented lines MUST start with "| |".
+## 3. Automation Standards
+- **Argument Style**: Use positional arguments only.
+- **Waiting**: Use 'Wait For Elements State' for element visibility and 'Wait For Load State | networkidle' for transitions.
+- **HTML Capture & URL Logging**: Use the 'Capture HTML' keyword to log CURRENT_URL and save \${OUTPUT DIR}\${/}debug.html.
+`;
 
-## 3. ARGUMENT STYLE (NO LABELS)
-- NEVER use 'selector=', 'key=', 'txt=', 'url=', etc. Use positional only.
-
-## 4. HTML CAPTURE (CRITICAL FOR ANALYZER)
-- ALWAYS use the name 'debug.html'. NEVER use other names.
-- ALWAYS use 'Get Property | html | outerHTML' to get HTML.
-- ALWAYS write the file to \${OUTPUT DIR} using: \${OUTPUT DIR}\${/}debug.html
-- AFTER every page transition AND in the Teardown, capture the HTML:
-  | | \${html} | Get Property | html | outerHTML |
-  | | Create File | \${OUTPUT DIR}\${/}debug.html | \${html} |
-
-## 5. VALID KEYWORDS (DO NOT GUESS)
-- Waiting: ALWAYS use 'Wait For Elements State'. NEVER use 'Wait For Selector' or 'Wait For Element'.
-- Multiple elements: 'Get Elements'. (DO NOT use Query Selector All)
-- Single element: 'Get Element'. (DO NOT use Query Selector)
-- JSON String: Use '| \${json} | Evaluate | json.dumps(\${data}, indent=4) |'. (DO NOT use Convert To Json)
-
-## 6. SELF-CORRECTION RULES (AVOID COMMON BUGS)
-- **Rule 0 (Separator)**: ALWAYS use at least 4 spaces or a pipe (|) between keyword and arguments. Robot Framework will fail if you use only 1 space.
-- **Rule 1 (List Assignment)**: ALWAYS use scalar syntax $\{elements\} to store Get Elements. NEVER use @{elements} for assignment.
-- **Rule 2 (Mandatory Wait)**: BEFORE using Get Elements or Get Text, you MUST explicitly wait for that element.
-- **Rule 3 (Looping)**: In FOR loops, use @{list_variable} format.
-
-## 7. REFERENCE EXAMPLE:
+  const referenceExample = `
 | *** Settings *** |
 | Library | Browser |
 | Library | JSONLibrary |
@@ -65,43 +37,42 @@ ${analysis_results.map(r => `- ${r.description}: ${r.selector}`).join('\n')}
 | Test Teardown | Capture HTML |
 
 | *** Test Cases *** |
-| Search Test |
+| Automation Task |
 | | [Setup] | Start Session |
-| | Search AI |
-| | [Teardown] | Close Browser |
+| | Perform Steps |
+| | [Teardown] | Close Session |
 
 | *** Keywords *** |
 | Start Session |
 | | New Browser | chromium | headless=True |
-| | New Page | https://www.naver.com |
+| | New Page | https://example.com |
 | | Capture HTML |
 
-| Search AI |
-| | Wait For Elements State | \\#query | visible | 10s |
-| | Fill Text | \\#query | AI |
-| | Press Keys | \\#query | Enter |
-| | Wait For Load State | networkidle |
+| Perform Steps |
+| | Wait For Elements State | \\#target-id | visible | 10s |
+| | Click | \\#target-id |
 | | Capture HTML |
 
 | Capture HTML |
+| | \${url} | Get Url |
+| | Log To Console | CURRENT_URL: \${url} |
 | | \${html} | Get Property | html | outerHTML |
 | | Create File | \${OUTPUT DIR}\${/}debug.html | \${html} |
 
-| Close Browser |
+| Close Session |
 | | Capture HTML |
 | | Browser.Close Browser |
 `;
 
   const systemPrompt = `You are a Robot Framework Expert.
-Generate a valid .robot file based on the provided test plan.
-Strictly follow these MANDATORY guidelines:
+Generate a valid .robot file based on the provided plan.
+
 ${strictGuidelines}
 
 ${contextInfo}
 
-CRITICAL: Use PIPE-SEPARATED format only.
-LIBRARIES: Only use Browser, OperatingSystem, JSONLibrary, and Collections.
-SYNTAX: Use modern "RETURN" instead of deprecated "[Return]".
+### REFERENCE EXAMPLE:
+${referenceExample}
 
 Return ONLY the raw content of the .robot file. No markdown code blocks.`;
 

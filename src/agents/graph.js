@@ -31,7 +31,28 @@ export function createGraph(config) {
       fixProposal: { reducer: (a, b) => b },
       isSuccess: { reducer: (a, b) => b },
       needsReplan: { reducer: (a, b) => b },
-      history: { reducer: (a, b) => a.concat(b) }
+      history: { reducer: (a, b) => a.concat(b) },
+      page_history: { 
+        reducer: (a, b) => {
+          const current = a || [];
+          const updates = b || [];
+          
+          // If update has a 'url', check if it's already the last entry
+          // If it matches last entry, MERGE it. If it's new, CONCAT it.
+          if (updates.length > 0) {
+            const lastIdx = current.length - 1;
+            const newEntry = updates[0];
+            
+            if (lastIdx >= 0 && current[lastIdx].url === newEntry.url) {
+              const merged = [...current];
+              merged[lastIdx] = { ...merged[lastIdx], ...newEntry };
+              return merged;
+            }
+            return current.concat(updates);
+          }
+          return current;
+        }
+      }
     }
   });
 

@@ -83,30 +83,56 @@ export async function executorNode(state, config) {
   }
 
   // Extract current URL and failed locator from STDOUT/STDERR
-  let current_url = null;
   let analysis_goal = null;
 
+  // Improved URL extraction: Look for explicit 'CURRENT_URL:' logs or standard Browser logs
+  let detected_url = state.current_url || null;
   const stdout = result.stdout || '';
   const stderr = result.stderr || '';
+  
+  // Look for: "CURRENT_URL: https://..." or "Opened url: https://..."
+  const urlRegex = /(?:CURRENT_URL:|opened url|navigated to|url):?\s*(https?:\/\/[^\s"'\|]+)/gi;
+  let match;
+  let matches = [];
+  while ((match = urlRegex.exec(stdout)) !== null) {
+    matches.push(match[1]);
+  }
+  
+  if (matches.length > 0) {
+    detected_url = matches[matches.length - 1];
+  }
 
-  const urlMatch = stdout.match(/opened url: (https?:\/\/[^\s]+)/i);
-  if (urlMatch) current_url = urlMatch[1];
+  const new_history_entries = [];
+  if (detected_url && (!state.page_history || state.page_history.length === 0 || state.page_history[state.page_history.length - 1].url !== detected_url)) {
+    new_history_entries.push({ 
+      url: detected_url, 
+      timestamp: new Date().toISOString(),
+      step: state.retryCount + 1
+    });
+  }
 
   const locatorMatch = stdout.match(/waiting for locator\('(.+?)'\)/i) || 
                        stderr.match(/waiting for locator\('(.+?)'\)/i);
-  
+
   if (locatorMatch) {
     const failedLocator = locatorMatch[1];
-    analysis_goal = `The locator '${failedLocator}' failed. Find the correct, most reliable CSS selector for this element in the current HTML.`;
-    console.log(`[Executor] Detected failed locator: ${failedLocator}`);
+    analysis_goal = `The locator '${failedLocator}' failed on page ${detected_url}. Find the correct, most reliable CSS selector for this element in the current HTML.`;
+    console.log(`[Executor] Detected failed locator: ${failedLocator} at ${detected_url}`);
+  } else if (result.exitCode !== 0) {
+    // Capture the last error line from stdout/stderr for logic failures
+    const lines = stdout.split('\n').filter(l => l.trim() !== '');
+    const lastError = lines.find(l => l.includes('| FAIL |')) || lines[lines.length - 1];
+    analysis_goal = `The script failed with error: "${lastError.trim()}". Analyze the page structure to find the correct elements for the current step.`;
+    console.log(`[Executor] Detected logic failure: ${analysis_goal}`);
   }
 
   return {
     executionResult: result,
-    html_content, // Latest HTML (or null if failed to capture)
-    element_inventory: null, // Clear old inventory so Analyzer can rebuild it
-    analysis_results: [],    // Clear old results
-    current_url,
+    html_content,
+    element_inventory: null,
+    analysis_results: [],
+    current_url: detected_url,
+    page_history: new_history_entries, // Only return the NEW entries for concat reducer
     analysis_goal
   };
 }

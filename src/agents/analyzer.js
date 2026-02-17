@@ -3,7 +3,10 @@ import { extractJson } from '../lib/json-parser.js';
 
 export async function analyzerNode(state, config) {
   const { llm } = config;
-  const { html_content, analysis_goal, requirement, current_url } = state;
+  const { html_content, analysis_goal, requirement, current_url, retryCount, page_history } = state;
+
+  console.log(`\n[Analyzer] 🚀 Node Start`);
+  console.log(`[Analyzer] 📂 State: URL=${current_url || 'N/A'}, Retry=${retryCount}, History=${page_history?.length || 0} steps`);
 
   const goal = analysis_goal || `Analyze elements for: ${requirement}`;
   console.log('\n[Analyzer] 🔍 Analyzing HTML structure...');
@@ -18,7 +21,7 @@ export async function analyzerNode(state, config) {
     const $ = load(html_content);
     
     // Target interactive and semantic elements
-    const selectors = 'a, button, input, select, [role="button"], [role="tab"], [data-clk], [data-testid], h1, h2, h3';
+    const selectors = 'a, button, input, select, [role="button"], [role="tab"], [data-clk], [data-testid], h1, h2, h3, li, .news_tit, .news_contents';
     const elements = $(selectors);
     
     let count = 0;
@@ -32,13 +35,15 @@ export async function analyzerNode(state, config) {
       const role = $el.attr('role');
       const name = $el.attr('name');
       const type = $el.attr('type');
+      const title = $el.attr('title');
+      const alt = $el.attr('alt');
       const text = $el.text().trim().substring(0, 60).replace(/\s+/g, ' ');
       const dataClk = $el.attr('data-clk');
       const dataTestid = $el.attr('data-testid');
       const placeholder = $el.attr('placeholder');
 
       // Skip elements that have absolutely no identifying features or text
-      if (!id && !cls && !text && !name && !role && !dataClk && !dataTestid) return;
+      if (!id && !cls && !text && !name && !role && !dataClk && !dataTestid && !title) return;
 
       let entry = `<${tag}`;
       if (id) entry += ` id="#${id}"`;
@@ -46,6 +51,8 @@ export async function analyzerNode(state, config) {
       if (role) entry += ` role="${role}"`;
       if (name) entry += ` name="${name}"`;
       if (type) entry += ` type="${type}"`;
+      if (title) entry += ` title="${title}"`;
+      if (alt) entry += ` alt="${alt}"`;
       if (placeholder) entry += ` placeholder="${placeholder}"`;
       if (dataClk) entry += ` data-clk="${dataClk}"`;
       if (dataTestid) entry += ` data-testid="${dataTestid}"`;
@@ -54,30 +61,30 @@ export async function analyzerNode(state, config) {
       if (text) entry += `> Text: "${text}"</${tag}>`;
       else entry += ' />';
 
-      elementInventory += entry + '\n';
+      elementInventory += `[${count}] ${entry}\n`;
       count++;
     });
   }
   
   console.log(`[Analyzer] 📊 Inventory size: ${elementInventory.length} chars (${elementInventory.split('\n').length} elements)`);
 
-  const systemPrompt = `You are an expert Web Element Analyzer with "State Awareness".
-Analyze the provided ELEMENT INVENTORY to find the best CSS selectors.
+  const systemPrompt = `You are a Web Structure Analyzer with "State Awareness".
+Your goal is to identify the current page and find correct selectors for the goal.
 
-STATE CHECK & ANALYSIS RULES:
-1. **Compare** [Current URL] and [Element Inventory] with the [Goal].
-2. **Identify the CURRENT STATE** (e.g., "On Home Page", "On Search Results").
-3. **NO GUESSING**: Only provide selectors for elements you can ACTUALLY see in the inventory. 
-4. **PHASED ANALYSIS**: If the goal requires elements from a NEXT page but you are on a PREVIOUS page, DO NOT guess. State that "Further analysis is required after navigation".
-5. **SELECTOR RULES**:
-   - Target ID (#) if available and unique.
-   - Use [role="..."], [name="..."], or text if ID is missing.
-   - For ambiguous elements, use parent-child relationship or nth-child.
+### CONTEXT:
+- Target Goal: ${goal}
+- Current URL: ${current_url || 'Unknown'}
+- Page History: ${JSON.stringify(page_history || [])}
+
+### STATE ANALYSIS RULES:
+1. **Identify Page Phase**: Look at the URL and History to determine where we are in the flow.
+2. **Selector Accuracy**: Only return selectors for elements visible in the provided inventory.
+3. **SELECTOR ESCAPING**: ALL CSS selectors starting with '#' MUST be returned with a backslash: \#id-name. This is a Robot Framework syntax requirement.
 
 Return a SINGLE JSON object:
-- state_diagnosis: Detailed diagnosis (e.g., "Correct Page", "Partial Page", "Wrong Page").
-- selectors: Array of objects {description, selector}.
-- strategy: Explanation of what was found and what is missing for the next phase.`;
+- state_diagnosis: Explanation of the current page state.
+- selectors: Array of { description, selector } found in the inventory.
+- strategy: Next immediate action based on the findings.`;
 
   const userMessage = `Goal: ${analysis_goal}
 Current URL: ${current_url || 'Unknown'}
@@ -98,10 +105,16 @@ ${elementInventory}`;
   console.log(`[Analyzer] ✅ Analysis Complete. Diagnosis: ${diagnosis}`);
   if (result.strategy) console.log(`[Analyzer] 🎯 Strategy: ${result.strategy}`);
   
-  // Return everything to ensure state is fully updated for the Debugger
   return {
     analysis_results: result.selectors || [],
     analysis_strategy: result.strategy || '',
-    element_inventory: elementInventory // This is the crucial information for Debugger
+    element_inventory: elementInventory,
+    // Add inventory to history for this specific URL
+    page_history: [{
+      url: current_url,
+      inventory: elementInventory,
+      diagnosis: diagnosis
+    }],
+    html_content: null 
   };
 }

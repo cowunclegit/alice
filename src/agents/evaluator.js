@@ -2,9 +2,11 @@ import { extractJson } from '../lib/json-parser.js';
 
 export async function evaluatorNode(state, config) {
   const { llm } = config;
-  const { requirement, executionResult, current_url, element_inventory } = state;
+  const { requirement, executionResult, current_url, element_inventory, retryCount, page_history } = state;
 
-  console.log('\n[Evaluator] Performing semantic verification of results...');
+  console.log(`\n[Evaluator] 🚀 Node Start`);
+  console.log(`[Evaluator] 📂 State: URL=${current_url || 'N/A'}, Retry=${retryCount}, History=${page_history?.length || 0} steps`);
+  console.log('[Evaluator] Performing semantic verification of results...');
 
   const systemPrompt = `You are a Robot Framework Semantic Evaluator.
 Compare the execution result and the CURRENT page state against the original user intent.

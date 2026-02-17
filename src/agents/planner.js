@@ -2,9 +2,11 @@ import { extractJson } from '../lib/json-parser.js';
 
 export async function plannerNode(state, config) {
   const { llm } = config;
-  const { requirement, plan, analysis, current_url } = state;
+  const { requirement, plan, analysis, current_url, retryCount, page_history } = state;
 
-  console.log('\n[Planner] Planning/Updating strategy...');
+  console.log(`\n[Planner] 🚀 Node Start`);
+  console.log(`[Planner] 📂 State: URL=${current_url || 'N/A'}, Retry=${retryCount}, History=${page_history?.length || 0} steps`);
+  console.log('[Planner] Planning/Updating strategy...');
 
   const systemPrompt = `You are a Robot Framework Test Planner.
 Your goal is to create or UPDATE a detailed test plan.
